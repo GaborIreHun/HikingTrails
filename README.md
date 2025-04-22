@@ -1,6 +1,8 @@
 # HikingTrails
 Program that reads a topographic grid (rows of digits 0–9), finds every “trailhead” (0), explores all +1‑step paths up to summits (9) using breadth‑first search, and prints each trailhead’s reachable‑9 count plus their total score.
 
+Note: This utility is intended as a demonstration of the core algorithmic approach and therefore expects strictly well‑formed input (each line a uniform length of digits 0–9, at least one 0 and one 9, terminated by END when used interactively). It is not hardened as a production‑grade parser; please ensure your map data conforms to the specification before running.
+
 **Prerequisites**  
 - Java 17 or newer (uses `record` types).
 
