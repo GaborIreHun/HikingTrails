@@ -88,6 +88,11 @@ public class HikingTrails {
                 result.add(new Position(cur.row, cur.col));
                 continue;
             }
+            // Explore all 4 directions (up, down, left, right)
+            // Check if the next cell is within bounds and has the expected height
+            // If so, mark it as visited and add it to the queue
+            // nc- new column, nr- new row
+            // cur- current cell, d- direction
             for (var d : DIRS) {
                 int nr = cur.row + d[0], nc = cur.col + d[1];
                 if (nr >= 0 && nr < R && nc >= 0 && nc < C
@@ -102,33 +107,74 @@ public class HikingTrails {
     }
 
     /**
-     * Reads the grid from standard input
-     * The grid is read until "END" is encountered
-     * Each line of the grid is trimmed and validated
-     * @param br The BufferedReader to read from
-     * @return The grid of integers representing heights
-     * @throws IOException If an I/O error occurs
+     * Reads a digit-map from the console:
+     * 1) Prompts for a positive integer (column count).  Keeps asking until you type one.
+     * 2) Prompts for each row (exactly that many digits).  Keeps asking until you type a valid row or END.
+     *
+     * @param br  the BufferedReader wrapping System.in
+     * @return    a rectangular int[][] of size [rowCount][colCount]
+     * @throws IOException  on I/O errors (not on user-typing null/EOF)
      */
     private static int[][] readGrid(BufferedReader br) throws IOException {
-        List<String> lines = new ArrayList<>();
-        String line;
-        while ((line = br.readLine()) != null) {
+        // 1) Ask for column count
+        int cols = -1;
+        while (cols < 0) {
+            System.out.print("Enter number of columns (positive integer): ");
+            String input = br.readLine();
+            if (input == null) {
+                // User hit EOF / ctrl-d; treat it like bad input and re-prompt
+                System.out.println("  ▶ A positive integer is required for columns. Please try again.");
+                continue;
+            }
+            input = input.trim();
+            try {
+                cols = Integer.parseInt(input);
+                if (cols <= 0) {
+                    System.out.println("  ▶ Please enter a number greater than zero.");
+                    cols = -1;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("  ▶ Invalid entry. You must enter a positive integer.");
+            }
+        }
+
+        // 2) Read each row until the user types END
+        List<String> rows = new ArrayList<>();
+        while (true) {
+            System.out.print("Enter a row of " + cols + " digits (or END to finish): ");
+            String line = br.readLine();
+            if (line == null) {
+                // Treat EOF like an invalid row; re-prompt
+                System.out.println("  ▶ Expected " + cols + " digits or END. Please try again.");
+                continue;
+            }
             line = line.trim();
-            if (line.equalsIgnoreCase("END")) break;
-            if (!line.isEmpty()) lines.add(line);
+
+            if (line.equalsIgnoreCase("END")) {
+                break;
+            }
+            if (line.length() != cols || !line.matches("\\d{" + cols + "}")) {
+                System.out.println("  ▶ Invalid row: must be exactly " 
+                                + cols + " digits (0–9). Try again.");
+                continue;
+            }
+            rows.add(line);
         }
-        if (lines.isEmpty()) {
-            throw new IllegalArgumentException("No map data provided");
+
+        // 3) Ensure at least one row was entered
+        if (rows.isEmpty()) {
+            System.out.println("No rows entered. Exiting.");
+            System.exit(1);
         }
-        int cols = lines.get(0).length();
-        for (String l : lines) {
-            if (l.length() != cols || !l.matches("\\d+"))
-                throw new IllegalArgumentException("Invalid row: " + l);
+
+        // 4) Build and return the numeric grid
+        int[][] grid = new int[rows.size()][cols];
+        for (int r = 0; r < rows.size(); r++) {
+            String row = rows.get(r);
+            for (int c = 0; c < cols; c++) {
+                grid[r][c] = row.charAt(c) - '0';
+            }
         }
-        int[][] grid = new int[lines.size()][cols];
-        for (int i = 0; i < lines.size(); i++)
-            for (int j = 0; j < cols; j++)
-                grid[i][j] = lines.get(i).charAt(j) - '0';
         return grid;
     }
 }
